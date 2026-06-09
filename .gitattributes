@@ -1,0 +1,2 @@
+5.[[:space:]]data/Best[[:space:]]partner[[:space:]]data/XML[[:space:]]eu[[:space:]]projects/*.xml filter=lfs diff=lfs merge=lfs -text
+5.[[:space:]]data/Best[[:space:]]partner[[:space:]]data/EU[[:space:]]projects[[:space:]]csv.csv filter=lfs diff=lfs merge=lfs -text
