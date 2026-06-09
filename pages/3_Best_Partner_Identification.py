@@ -65,7 +65,14 @@ else:
     st.caption("To create the ZIP: right-click the `XML eu projects` folder → Send to → Compressed (zipped) folder")
 
 st.subheader("Step 3 — Abstract")
-abstract_upload = st.file_uploader("Abstract text file (.txt)", type=["txt"])
+st.caption("Recommended: 150–400 words (description + keywords)")
+abstract_input_mode = st.radio("Input method", ["Upload .txt file", "Paste text"], horizontal=True, key="abs_mode_3")
+if abstract_input_mode == "Upload .txt file":
+    abstract_upload = st.file_uploader("Abstract text file (.txt)", type=["txt"])
+    abstract_pasted = None
+else:
+    abstract_upload = None
+    abstract_pasted = st.text_area("Paste your abstract here", height=200, placeholder="Description\n\nYour project description...\n\nKeywords\n\nkeyword1, keyword2, keyword3")
 
 st.subheader("Step 4 — Settings")
 num_top = st.number_input("Number of top projects to analyse", min_value=1, max_value=500, value=50)
@@ -75,8 +82,12 @@ num_top = st.number_input("Number of top projects to analyse", min_value=1, max_
 st.subheader("Step 5 — Run")
 
 csv_ready = SERVER_CSV.exists() or csv_upload is not None
-if st.button("▶ Run Matching", disabled=(abstract_upload is None or not csv_ready)):
-    abstract_text = abstract_upload.read().decode("utf-8", errors="replace").strip()
+abstract_ready = abstract_upload is not None or (abstract_pasted and abstract_pasted.strip())
+if st.button("▶ Run Matching", disabled=(not abstract_ready or not csv_ready)):
+    if abstract_upload:
+        abstract_text = abstract_upload.read().decode("utf-8", errors="replace").strip()
+    else:
+        abstract_text = abstract_pasted.strip()
 
     desc_m = re.search(r"Description:\s*(.*?)\nKeywords:", abstract_text, re.DOTALL | re.I)
     kw_m   = re.search(r"Keywords:\s*(.*)",               abstract_text, re.DOTALL | re.I)
@@ -250,7 +261,7 @@ if st.button("▶ Run Matching", disabled=(abstract_upload is None or not csv_re
     if orgs_df.empty:
         st.warning("No partner organisations found — XML files are not available on the server. Only the project matches Excel will be complete.")
 
-    abstract_base = re.sub(r"[^A-Za-z0-9 _-]", "", Path(abstract_upload.name).stem).strip() or "Abstract"
+    abstract_base = re.sub(r"[^A-Za-z0-9 _-]", "", Path(abstract_upload.name).stem if abstract_upload else "abstract").strip() or "Abstract"
 
     c1, c2 = st.columns(2)
     with c1:

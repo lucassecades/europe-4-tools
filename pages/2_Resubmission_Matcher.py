@@ -112,23 +112,31 @@ with col1:
         excel_upload = st.file_uploader("EU calls Excel (.xlsx)", type=["xlsx"])
 with col2:
     st.subheader("Step 2 — Abstract")
-    abstract_upload = st.file_uploader("Abstract text file (.txt)", type=["txt"])
+    st.caption("Recommended: 150–400 words (description + keywords)")
+    abstract_input_mode = st.radio("Input method", ["Upload .txt file", "Paste text"], horizontal=True, key="abs_mode_2")
+    if abstract_input_mode == "Upload .txt file":
+        abstract_upload = st.file_uploader("Abstract text file (.txt)", type=["txt"])
+        abstract_pasted = None
+    else:
+        abstract_upload = None
+        abstract_pasted = st.text_area("Paste your abstract here", height=200, placeholder="Description\n\nYour project description...\n\nKeywords\n\nkeyword1, keyword2, keyword3")
 
 # ── Run ───────────────────────────────────────────────────────────────────────
 
 st.subheader("Step 3 — Run")
 
 excel_ready = DEFAULT_EXCEL.exists() or excel_upload
-if st.button("▶ Run Analysis", disabled=(not excel_ready or not abstract_upload)):
+abstract_ready = abstract_upload or (abstract_pasted and abstract_pasted.strip())
+if st.button("▶ Run Analysis", disabled=(not excel_ready or not abstract_ready)):
     if DEFAULT_EXCEL.exists():
         df = pd.read_excel(DEFAULT_EXCEL)
     else:
         df = pd.read_excel(excel_upload)
     st.info(f"Loaded {len(df)} rows from Excel")
 
-    abstract_text = read_text(abstract_upload).strip()
+    abstract_text = (read_text(abstract_upload) if abstract_upload else abstract_pasted).strip()
     if not abstract_text:
-        st.error("Abstract file is empty")
+        st.error("Abstract is empty")
         st.stop()
 
     kws = extract_keywords(abstract_text)
@@ -181,6 +189,6 @@ if st.button("▶ Run Analysis", disabled=(not excel_ready or not abstract_uploa
     st.download_button(
         "⬇ Download analysis Excel",
         data=buf,
-        file_name=f"EU open calls - analysis - {Path(abstract_upload.name).stem}.xlsx",
+        file_name=f"EU open calls - analysis - {Path(abstract_upload.name).stem if abstract_upload else 'abstract'}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
