@@ -1,0 +1,106 @@
+===========================================
+EXPERTISE PROFILE
+===========================================
+
+PROFESSOR: Adrian Munteanu
+
+---
+
+## RESEARCH TOPICS
+
+### TOPIC 1: Light Field Imaging and Immersive 6DoF Visual Content
+
+I specialize in computational plenoptic imaging for photorealistic rendering of large dynamic scenes enabling multiple users to consume immersive content from arbitrary viewpoints (6 degrees of freedom). My research addresses light field acquisition, representation, modeling, and view synthesis, covering the complete end-to-end processing chain. I develop novel multidimensional signal processing methods and machine learning techniques to advance the theory and practical implementation of light field systems. My work bridges fundamental signal theory with applied immersive visual communications, enabling new paradigms in virtual reality, telepresence, and immersive media consumption.
+
+**Keywords:** light field imaging, plenoptic function, 6DoF immersive content, view synthesis, volumetric rendering, computational imaging, multidimensional signal processing, immersive visual communications, light field acquisition, dynamic scene capture
+
+---
+
+### TOPIC 2: Deep Learning for Autonomous Navigation in GNSS-Denied and Hostile Environments
+
+I develop advanced perception and navigation systems for unmanned aerial vehicles operating in GNSS-denied environments using passive multispectral sensing and inertial navigation. My expertise covers detection, recognition, and identification algorithms leveraging multispectral imagery combined with inertial odometry to overcome GNSS jamming and enable autonomous operation in hostile or stealth-critical scenarios. I address challenges of monomodal passive sensing limitations through multimodal sensor fusion, reducing false positives and enabling reliable target detection under adverse conditions (smoke, weather, poor lighting, camouflage). My work advances beyond traditional solutions to create robust autonomous UAV systems for modern defense and security applications.
+
+**Keywords:** UAV navigation, GNSS-denied environments, multispectral imaging, inertial navigation, autonomous perception, target detection, sensor fusion, passive sensing, stealth operations, UAV autonomy
+
+---
+
+### TOPIC 3: AI-Enabled Optical Inspection and Deflectometry for Quality Control
+
+I develop intelligent optical inspection systems based on deflectometry techniques for automated quality control of transparent optical components in high-volume production environments. My research applies advanced signal processing and machine learning to enable inspection of intraocular lenses (IOLs), automotive glazing, and other precision optical devices, ensuring both optical and geometrical properties meet specifications. I focus on flexible software-based inspection solutions that reduce costs, improve sustainability, and enhance product quality at production line speeds. My work addresses critical quality assurance needs in both healthcare (vision correction) and automotive safety (ADAS systems).
+
+**Keywords:** optical inspection, deflectometry, AI quality control, automated inspection, transparent optical components, intraocular lenses, automotive glazing, ADAS, production optimization, machine vision
+
+---
+
+### TOPIC 4: Deep Learning for Weather Prediction, Climate Monitoring, and Extreme Event Forecasting
+
+I develop deep learning systems for calibrated seamless prediction of precipitation and flood warnings, combining global numerical weather prediction models with high-resolution kilometric-scale systems. My expertise spans generative adversarial networks (GANs), residual learning, and data-driven techniques for correcting systematic model errors through downscaling and calibration. I create integrated frameworks that bridge weekly-scale early warning systems with short-term high-resolution forecasts for both riverine and urban flood impact assessment. My work enables probabilistic risk quantification and supports evidence-based decision-making for emergency management and climate resilience.
+
+**Keywords:** deep learning weather prediction, flood forecasting, extreme precipitation modeling, GANs for weather, seamless forecasting, quantitative precipitation estimation, nowcasting, hydrological modeling, early warning systems, probabilistic forecasting
+
+---
+
+### TOPIC 5: Physics-Informed Deep Learning for Geophysics and Climate Applications
+
+I combine physics-based nonlinear numerical modeling with data-driven deep learning to leverage heterogeneous and voluminous multimodal data from satellite systems, smartphones, and distributed weather stations. My research emphasizes hybrid methods that integrate physical constraints into neural network architectures, enabling domain-specific deep learning for weather, climate, and space weather applications. I focus on interpretable deep learning approaches that capture intractable nonlinearities while maintaining physical consistency and scientific rigor. My work advances the integration of traditional meteorological science with modern machine learning to enhance weather services and climate understanding.
+
+**Keywords:** physics-informed neural networks, hybrid modeling, deep learning meteorology, multimodal data fusion, weather assimilation, climate modeling, residual learning, interpretable AI, geophysical applications, space weather prediction
+
+---
+
+## PREVIOUS PROJECTS
+
+### Project 1: Panoptes – Integrated Computational Plenoptic Imaging for Large-Volume High-Quality Immersive Visual Content
+
+Developed canonical light field representations and signal processing techniques for photorealistic rendering of large dynamic scenery enabling 6DoF immersive content consumption from arbitrary viewpoints. Advanced the scientific and technological foundations for wide baseline light field imaging through novel multidimensional signal processing and machine learning. Contributed fundamental advances in light field acquisition, representation, modeling, and rendering theory, establishing new theoretical and practical benchmarks for immersive visual communications era.
+
+**Keywords:** light field imaging, plenoptic imaging, 6DoF content, view synthesis, volumetric rendering, immersive media, computational imaging, signal processing
+
+---
+
+### Project 2: ATTENTION – Advanced Target Detection, Recognition and Identification based on Multispectral Inertial Odometry for Navigation
+
+Developed multispectral sensing systems for UAV autonomous navigation in GNSS-denied and hostile environments, overcoming jamming and stealth constraints. Integrated passive multispectral imaging with inertial navigation to enable reliable target detection, recognition, and identification under challenging conditions (smoke, adverse weather, poor lighting, camouflage). Advanced beyond monomodal limitations through multimodal sensor fusion, reducing false positives and enabling covert autonomous operations without compromising mission effectiveness in modern defense scenarios.
+
+**Keywords:** UAV navigation, multispectral imaging, GNSS-denied, autonomous perception, inertial navigation, target detection, passive sensing, stealth operations
+
+---
+
+### Project 3: THEIA – AI-enabled Multiview Deflectometry for Curved Glass
+
+Developed AI-powered deflectometry system for automated optical inspection of transparent curved optical components on production lines, serving both intraocular lens (IOL) and automotive glazing manufacturers. Created software-based flexible inspection solution ensuring optical and geometrical properties compliance, reducing production costs and improving quality control throughput. Solution addresses critical needs in healthcare (vision correction technology) and automotive safety (ADAS systems), enabling cost-effective high-volume quality assurance.
+
+**Keywords:** optical inspection, deflectometry, AI quality control, transparent optics, IOLs, automotive glazing, automated inspection, production optimization
+
+---
+
+### Project 4: ORIGAMI – Drone Swarm Navigation in GNSS-Degraded and Non-Permissive Environments
+
+Enhanced European defense capabilities through autonomous GNSS-free navigation systems for collaborative drone swarms in challenging environments. Addressed critical vulnerabilities related to RF jamming and GNSS dependencies demonstrated in modern conflicts through matured autonomous navigation technologies. Developed iterative testing and validation approaches for reliable drone swarm coordination and mission execution in high-intensity warfare scenarios while maintaining operational effectiveness in degraded communication and navigation environments.
+
+**Keywords:** drone swarms, autonomous navigation, GNSS-free, RF-denied environments, swarm coordination, defense systems, autonomous UAVs
+
+---
+
+### Project 5: Deep Learning Based Extreme Rainfall and Flood Warnings Through Seamless Forecasting
+
+Developed deep learning system combining global numerical weather prediction models with high-resolution kilometric-scale forecasts for calibrated seamless precipitation and flood alert predictions. Applied generative adversarial networks (GANs) and residual learning for systematic error correction, downscaling, and calibration across time horizons (weekly early warnings to hour-scale near-real-time impacts). Created fully probabilistic early warning framework validated with physics-based hydrological models, enabling local authorities and emergency services to quantify and mitigate riverine and urban flooding risk through data-driven decision support.
+
+**Keywords:** deep learning weather prediction, flood forecasting, GANs meteorology, seamless forecasting, precipitation modeling, early warning systems, probabilistic forecasting, hydrological modeling
+
+---
+
+### Project 6: DEEP – Deep Learning Combined with Physical Modeling for Weather, Climate and Geophysics
+
+Established long-term research program integrating deep learning with physics-based numerical modeling for weather forecasting, climate monitoring, and space weather prediction. Developed hybrid methodologies combining residual learning, data transformation, and fusion techniques with domain-specific constraints, addressing heterogeneous multimodal data (satellites, smartphones, weather stations). Created interpretable deep learning approaches capturing nonlinearities while maintaining physical consistency. Developed seamless nowcasting and forecasting system for precipitation type and amount, advancing quality of meteorological services through physics-informed machine learning.
+
+**Keywords:** physics-informed deep learning, hybrid modeling, weather forecasting, climate applications, multimodal data fusion, residual learning, interpretable AI, meteorological services, space weather
+
+---
+
+===========================================
+
+## PREVIOUS PROJECTS
+
+[No projects specified in original format]
+

@@ -1,0 +1,11 @@
+Description
+
+AUTOCRAFT investigates how craftsmanship in manufacturing can be captured, modeled, and transferred to address the growing shortage of experienced operators in flexible production environments. While many industrial tasks still rely on tacit craft skills to ensure efficiency, safety, ergonomics, and high quality, increasing task variability limits long-term skill accumulation. As a result, industries face a decline in deeply experienced professionals.
+
+The project aims to formalize and enrich craftsmanship by capturing implicit knowledge that goes beyond traditional engineering documentation and interview-based methods. Multimodal measurements will be collected from operators, including movement trajectories, contact forces, body postures, material and workpiece properties, and process parameter settings. These data streams will be integrated into quantitative skill models that describe, assess, and compare performance levels in a standardized manner.
+
+Based on these models, AUTOCRAFT will develop a personalized training platform for skill transfer. The system will provide multimodal feedback adapted to the operator’s proficiency level, including trajectory guidance and correction through VR/AR, as well as auditory and tactile feedback. The framework and training platform will be validated in laboratory settings and demonstrated in realistic industrial use cases, contributing to workforce upskilling, reduced reliance on expert instructors, and lower entry barriers for new hires.
+
+Keywords
+
+Craftsmanship modeling, tacit knowledge capture, multimodal sensing, skill quantification, skills transfer, human-centered manufacturing, VR/AR training, personalized feedback, workforce upskilling, ergonomics, industrial training systems, Industry 4.0.
