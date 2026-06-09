@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+"""
+EU Calls Expertise Matcher — Streamlit version
+"""
+import io
+import sys
+from pathlib import Path
+
+import pandas as pd
+import streamlit as st
+
+ROOT_DIR = Path(__file__).parent.parent
+
+sys.path.insert(0, str(ROOT_DIR / "1. Expertise matchmaking EU"))
+
+st.set_page_config(page_title="Expertise Matching", page_icon="🔬", layout="wide")
+st.title("🔬 EU Calls Expertise Matcher")
+st.markdown("Upload an Excel of EU calls and expertise `.txt` files, then run the analysis.")
+
+# ── Inputs ────────────────────────────────────────────────────────────────────
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader("Step 1 — Excel file")
+    excel_upload = st.file_uploader("EU calls Excel (.xlsx)", type=["xlsx"])
+
+with col2:
+    st.subheader("Step 2 — Expertise files")
+    expertise_uploads = st.file_uploader(
+        "Expertise .txt files (one per expertise area)",
+        type=["txt"],
+        accept_multiple_files=True,
+    )
+
+# ── Run ───────────────────────────────────────────────────────────────────────
+
+st.subheader("Step 3 — Run")
+
+if st.button("▶ Run Expertise Analysis", disabled=(not excel_upload or not expertise_uploads)):
+    from qualitative_expertise_analysis import (
+        analyze_expertise_files,
+        validate_alignment_comprehensive,
+        generate_qualitative_explanation,
+        is_valid_description,
+    )
+
+    log = st.empty()
+    lines: list[str] = []
+
+    def log_line(msg: str):
+        lines.append(msg)
+        log.code("\n".join(lines), language=None)
+
+    log_line("=" * 70)
+    log_line("EU CALLS EXPERTISE MATCHER")
+    log_line("=" * 70)
+
+    # Load Excel
+    df = pd.read_excel(excel_upload)
+    log_line(f"Excel loaded: {len(df)} rows")
+
+    # Write expertise files to a temp dir so the analysis function can read them
+    import tempfile, os
+    tmp = Path(tempfile.mkdtemp())
+    for f in expertise_uploads:
+        (tmp / f.name).write_bytes(f.read())
+    log_line(f"Expertise files: {len(expertise_uploads)}")
+
+    # Analyse
+    expertise = analyze_expertise_files(tmp)
+    log_line(f"Expertise areas found: {len(expertise)}")
+
+    marked_indices = df[df.get("Interesting brubotics", pd.Series()).fillna("") == "Yes"].index.tolist()
+    log_line(f"Marked calls: {len(marked_indices)}")
+
+    if "Touchpoints" not in df.columns:
+        df["Touchpoints"] = ""
+
+    matches: list[dict] = []
+    matched_expertises: set[str] = set()
+
+    progress = st.progress(0)
+    for step, idx in enumerate(marked_indices):
+        call = df.loc[idx]
+        call_id = call.get("Call", f"Row {idx}")
+        title = str(call.get("Title", ""))
+        description = str(call.get("Description", ""))
+
+        if not is_valid_description(description):
+            log_line(f"  Skipped {call_id} — no valid description")
+        else:
+            call_matches = []
+            for exp_name, exp_data in expertise.items():
+                validation = validate_alignment_comprehensive(title, description, exp_data)
+                if validation["overall_pass"]:
+                    confidence = validation["confidence"]
+                    if exp_name not in matched_expertises:
+                        matched_expertises.add(exp_name)
+                        if f"{exp_name} - Project Alignment" not in df.columns:
+                            df[f"{exp_name} - Project Alignment"] = ""
+                        if f"{exp_name} - Confidence" not in df.columns:
+                            df[f"{exp_name} - Confidence"] = ""
+                    explanation = generate_qualitative_explanation(exp_data, validation, title, description)
+                    df.at[idx, f"{exp_name} - Project Alignment"] = explanation
+                    df.at[idx, f"{exp_name} - Confidence"] = f"{confidence:.1%}"
+                    call_matches.append(exp_name)
+                    matches.append({"call": call_id, "expertise": exp_name, "confidence": confidence})
+                    log_line(f"  Match: {str(call_id)[:40]} → {exp_name} ({confidence:.1%})")
+            if call_matches:
+                df.at[idx, "Touchpoints"] = "; ".join(call_matches)
+
+        progress.progress((step + 1) / max(len(marked_indices), 1))
+
+    log_line(f"\nTotal matches: {len(matches)}")
+    log_line("=" * 70)
+
+    # Output
+    buf = io.BytesIO()
+    df.to_excel(buf, index=False)
+    buf.seek(0)
+    st.success(f"Analysis complete — {len(matches)} matches found.")
+    st.download_button(
+        "⬇ Download result Excel",
+        data=buf,
+        file_name=excel_upload.name.replace(".xlsx", "_expertise_analysis.xlsx"),
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )

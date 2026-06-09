@@ -1,0 +1,9 @@
+streamlit
+pandas
+openpyxl
+beautifulsoup4
+rapidfuzz
+sentence-transformers
+scikit-learn
+torch
+numpy
