@@ -16,9 +16,11 @@ require_password()
 
 sys.path.insert(0, str(ROOT_DIR / "1. Expertise matchmaking EU"))
 
+DEFAULT_EXCEL = ROOT_DIR / "5. data" / "EU calls data" / "EUcalls-June26.xlsx"
+
 st.set_page_config(page_title="Expertise Matching", page_icon="🔬", layout="wide")
 st.title("🔬 EU Calls Expertise Matcher")
-st.markdown("Upload an Excel of EU calls and expertise `.txt` files, then run the analysis.")
+st.markdown("Upload expertise `.txt` files and run the analysis.")
 
 # ── Inputs ────────────────────────────────────────────────────────────────────
 
@@ -26,7 +28,11 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("Step 1 — Excel file")
-    excel_upload = st.file_uploader("EU calls Excel (.xlsx)", type=["xlsx"])
+    if DEFAULT_EXCEL.exists():
+        st.success(f"Using server file: `{DEFAULT_EXCEL.name}`")
+        excel_upload = None  # will use default
+    else:
+        excel_upload = st.file_uploader("EU calls Excel (.xlsx)", type=["xlsx"])
 
 with col2:
     st.subheader("Step 2 — Expertise files")
@@ -40,7 +46,8 @@ with col2:
 
 st.subheader("Step 3 — Run")
 
-if st.button("▶ Run Expertise Analysis", disabled=(not excel_upload or not expertise_uploads)):
+excel_ready = DEFAULT_EXCEL.exists() or excel_upload
+if st.button("▶ Run Expertise Analysis", disabled=(not excel_ready or not expertise_uploads)):
     from qualitative_expertise_analysis import (
         analyze_expertise_files,
         validate_alignment_comprehensive,
@@ -60,7 +67,10 @@ if st.button("▶ Run Expertise Analysis", disabled=(not excel_upload or not exp
     log_line("=" * 70)
 
     # Load Excel
-    df = pd.read_excel(excel_upload)
+    if DEFAULT_EXCEL.exists():
+        df = pd.read_excel(DEFAULT_EXCEL)
+    else:
+        df = pd.read_excel(excel_upload)
     log_line(f"Excel loaded: {len(df)} rows")
 
     # Write expertise files to a temp dir so the analysis function can read them

@@ -6,7 +6,9 @@ import collections
 import io
 import os
 import re
+import tempfile
 import xml.etree.ElementTree as ET
+import zipfile
 from pathlib import Path
 
 import pandas as pd
@@ -41,18 +43,36 @@ XML_DIR = DATA_DIR / "Best partner data" / "XML eu projects"
 
 # ── Inputs ────────────────────────────────────────────────────────────────────
 
-st.subheader("Step 1 — EU Projects CSV")
-csv_upload = st.file_uploader("EU projects CSV file (`EU projects csv.csv`)", type=["csv"])
+SERVER_CSV = DATA_DIR / "Best partner data" / "EU projects csv.csv"
+SERVER_XML = DATA_DIR / "Best partner data" / "XML eu projects"
 
-st.subheader("Step 2 — Abstract")
+st.subheader("Step 1 — EU Projects CSV")
+if SERVER_CSV.exists():
+    st.success("Using server file: `EU projects csv.csv`")
+    csv_upload = None
+else:
+    csv_upload = st.file_uploader("EU projects CSV file (`EU projects csv.csv`)", type=["csv"])
+
+st.subheader("Step 2 — XML files (for partner analysis)")
+if SERVER_XML.exists():
+    st.success("Using server XML files for partner analysis")
+    xml_zip_upload = None
+else:
+    xml_zip_upload = st.file_uploader(
+        "ZIP of the `XML eu projects` folder — needed for partner organisations analysis (optional)",
+        type=["zip"]
+    )
+    st.caption("To create the ZIP: right-click the `XML eu projects` folder → Send to → Compressed (zipped) folder")
+
+st.subheader("Step 3 — Abstract")
 abstract_upload = st.file_uploader("Abstract text file (.txt)", type=["txt"])
 
-st.subheader("Step 3 — Settings")
+st.subheader("Step 4 — Settings")
 num_top = st.number_input("Number of top projects to analyse", min_value=1, max_value=500, value=50)
 
 # ── Run ───────────────────────────────────────────────────────────────────────
 
-st.subheader("Step 4 — Run")
+st.subheader("Step 5 — Run")
 
 if st.button("▶ Run Matching", disabled=(abstract_upload is None or csv_upload is None)):
     abstract_text = abstract_upload.read().decode("utf-8", errors="replace").strip()
@@ -66,7 +86,8 @@ if st.button("▶ Run Matching", disabled=(abstract_upload is None or csv_upload
     # Load CSV
     with st.spinner("Loading EU projects database…"):
         try:
-            df = pd.read_csv(csv_upload, sep=";", quotechar='"', header=0,
+            csv_source = SERVER_CSV if SERVER_CSV.exists() else csv_upload
+            df = pd.read_csv(csv_source, sep=";", quotechar='"', header=0,
                              on_bad_lines="skip", dtype=str)
             valid_col_count = 20
             df = df[df.apply(lambda r: len(r) == valid_col_count, axis=1)]
@@ -150,29 +171,42 @@ if st.button("▶ Run Matching", disabled=(abstract_upload is None or csv_upload
     orgs = []
     rcn_to_title = {str(r.rcn): str(r.title) for r in top.itertuples(index=False)}
 
-    for step, row in enumerate(top.itertuples(index=False)):
-        rcn = str(getattr(row, "rcn"))
-        xml_path = XML_DIR / f"project-rcn-{rcn}_en.xml"
-        if not xml_path.exists():
-            continue
-        try:
-            tree = ET.parse(xml_path)
-            xroot = tree.getroot()
-            for org in xroot.findall(".//organization"):
-                name_raw = (org.findtext("legalName") or "").strip()
-                name = name_raw.lower()
-                cat = org.find('.//relations/categories/category[@classification="organizationActivityType"]/title')
-                type_ = (cat.text or "").strip() if cat is not None else ""
-                url_elem = org.find(".//address/url")
-                website = (url_elem.text or "").strip() if url_elem is not None else ""
-                orgs.append({
-                    "name": name, "display_name": name_raw, "type": type_,
-                    "rcn": rcn, "score": float(getattr(row, "match_score")) / 100.0,
-                    "website": website,
-                })
-        except Exception:
-            pass
-        status2.text(f"Parsing XML {step + 1}/{len(top)}…")
+    def parse_xmls_from_dir(xml_dir: Path):
+        for step, row in enumerate(top.itertuples(index=False)):
+            rcn = str(getattr(row, "rcn"))
+            xml_path = xml_dir / f"project-rcn-{rcn}_en.xml"
+            if not xml_path.exists():
+                continue
+            try:
+                tree = ET.parse(xml_path)
+                xroot = tree.getroot()
+                for org in xroot.findall(".//organization"):
+                    name_raw = (org.findtext("legalName") or "").strip()
+                    name = name_raw.lower()
+                    cat = org.find('.//relations/categories/category[@classification="organizationActivityType"]/title')
+                    type_ = (cat.text or "").strip() if cat is not None else ""
+                    url_elem = org.find(".//address/url")
+                    website = (url_elem.text or "").strip() if url_elem is not None else ""
+                    orgs.append({
+                        "name": name, "display_name": name_raw, "type": type_,
+                        "rcn": rcn, "score": float(getattr(row, "match_score")) / 100.0,
+                        "website": website,
+                    })
+            except Exception:
+                pass
+            status2.text(f"Parsing XML {step + 1}/{len(top)}…")
+
+    if SERVER_XML.exists():
+        parse_xmls_from_dir(SERVER_XML)
+    elif xml_zip_upload is not None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            with zipfile.ZipFile(xml_zip_upload, "r") as zf:
+                zf.extractall(tmp_dir)
+            # find the actual XML folder inside the zip
+            tmp_path = Path(tmp_dir)
+            xml_dirs = [p for p in tmp_path.rglob("*.xml")]
+            if xml_dirs:
+                parse_xmls_from_dir(xml_dirs[0].parent)
 
     status2.empty()
 
@@ -202,14 +236,18 @@ if st.button("▶ Run Matching", disabled=(abstract_upload is None or csv_upload
         }
         for v in org_agg.values()
     ]
-    orgs_df = pd.DataFrame(org_rows).sort_values(
-        ["score of pertinence", "# of projects"], ascending=[False, False]
+    orgs_df = pd.DataFrame(org_rows) if org_rows else pd.DataFrame(
+        columns=["name", "type", "website", "# of projects", "score of pertinence", "Involved projects"]
     )
+    if not orgs_df.empty:
+        orgs_df = orgs_df.sort_values(["score of pertinence", "# of projects"], ascending=[False, False])
     buf2 = io.BytesIO()
     orgs_df.to_excel(buf2, index=False)
     buf2.seek(0)
 
-    st.success(f"Done — top {len(top)} projects analysed, {len(orgs_df)} unique organisations found.")
+    st.success(f"Done — top {len(top)} projects analysed.")
+    if orgs_df.empty:
+        st.warning("No partner organisations found — XML files are not available on the server. Only the project matches Excel will be complete.")
 
     abstract_base = re.sub(r"[^A-Za-z0-9 _-]", "", Path(abstract_upload.name).stem).strip() or "Abstract"
 

@@ -15,6 +15,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from auth import require_password
 
 st.set_page_config(page_title="Resubmission Matcher", page_icon="🔄", layout="wide")
+DEFAULT_EXCEL = Path(__file__).parent.parent / "5. data" / "EU calls data" / "EUcalls-June26.xlsx"
+
 require_password()
 st.title("🔄 EU Open Calls Resubmission Matcher")
 st.markdown("Score EU open calls against your project abstract to find the best resubmission targets.")
@@ -103,7 +105,11 @@ def extract_keywords(text: str) -> list[str]:
 col1, col2 = st.columns(2)
 with col1:
     st.subheader("Step 1 — Excel file")
-    excel_upload = st.file_uploader("EU calls Excel (.xlsx)", type=["xlsx"])
+    if DEFAULT_EXCEL.exists():
+        st.success(f"Using server file: `{DEFAULT_EXCEL.name}`")
+        excel_upload = None
+    else:
+        excel_upload = st.file_uploader("EU calls Excel (.xlsx)", type=["xlsx"])
 with col2:
     st.subheader("Step 2 — Abstract")
     abstract_upload = st.file_uploader("Abstract text file (.txt)", type=["txt"])
@@ -112,8 +118,12 @@ with col2:
 
 st.subheader("Step 3 — Run")
 
-if st.button("▶ Run Analysis", disabled=(not excel_upload or not abstract_upload)):
-    df = pd.read_excel(excel_upload)
+excel_ready = DEFAULT_EXCEL.exists() or excel_upload
+if st.button("▶ Run Analysis", disabled=(not excel_ready or not abstract_upload)):
+    if DEFAULT_EXCEL.exists():
+        df = pd.read_excel(DEFAULT_EXCEL)
+    else:
+        df = pd.read_excel(excel_upload)
     st.info(f"Loaded {len(df)} rows from Excel")
 
     abstract_text = read_text(abstract_upload).strip()
