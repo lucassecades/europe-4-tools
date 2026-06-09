@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
-EU Calls Expertise Matcher — Streamlit version
+EU Calls Expertise Matcher â€” Streamlit version
 """
 import io
 import sys
@@ -11,23 +11,21 @@ import streamlit as st
 
 ROOT_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT_DIR))
-from auth import require_password
-require_password()
 
 sys.path.insert(0, str(ROOT_DIR / "1. Expertise matchmaking EU"))
 
 DEFAULT_EXCEL = ROOT_DIR / "5. data" / "EU calls data" / "EUcalls-June26.xlsx"
 
-st.set_page_config(page_title="Expertise Matching", page_icon="🔬", layout="wide")
-st.title("🔬 EU Calls Expertise Matcher")
+st.set_page_config(page_title="Expertise Matching", page_icon="ðŸ”¬", layout="wide")
+st.title("ðŸ”¬ EU Calls Expertise Matcher")
 st.markdown("Upload expertise `.txt` files and run the analysis.")
 
-# ── Inputs ────────────────────────────────────────────────────────────────────
+# â”€â”€ Inputs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("Step 1 — Excel file")
+    st.subheader("Step 1 â€” Excel file")
     if DEFAULT_EXCEL.exists():
         st.success(f"Using server file: `{DEFAULT_EXCEL.name}`")
         excel_upload = None  # will use default
@@ -35,19 +33,19 @@ with col1:
         excel_upload = st.file_uploader("EU calls Excel (.xlsx)", type=["xlsx"])
 
 with col2:
-    st.subheader("Step 2 — Expertise files")
+    st.subheader("Step 2 â€” Expertise files")
     expertise_uploads = st.file_uploader(
         "Expertise .txt files (one per expertise area)",
         type=["txt"],
         accept_multiple_files=True,
     )
 
-# ── Run ───────────────────────────────────────────────────────────────────────
+# â”€â”€ Run â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-st.subheader("Step 3 — Run")
+st.subheader("Step 3 â€” Run")
 
 excel_ready = DEFAULT_EXCEL.exists() or excel_upload
-if st.button("▶ Run Expertise Analysis", disabled=(not excel_ready or not expertise_uploads)):
+if st.button("â–¶ Run Expertise Analysis", disabled=(not excel_ready or not expertise_uploads)):
     from qualitative_expertise_analysis import (
         analyze_expertise_files,
         validate_alignment_comprehensive,
@@ -101,7 +99,7 @@ if st.button("▶ Run Expertise Analysis", disabled=(not excel_ready or not expe
         description = str(call.get("Description", ""))
 
         if not is_valid_description(description):
-            log_line(f"  Skipped {call_id} — no valid description")
+            log_line(f"  Skipped {call_id} â€” no valid description")
         else:
             call_matches = []
             for exp_name, exp_data in expertise.items():
@@ -119,7 +117,7 @@ if st.button("▶ Run Expertise Analysis", disabled=(not excel_ready or not expe
                     df.at[idx, f"{exp_name} - Confidence"] = f"{confidence:.1%}"
                     call_matches.append(exp_name)
                     matches.append({"call": call_id, "expertise": exp_name, "confidence": confidence})
-                    log_line(f"  Match: {str(call_id)[:40]} → {exp_name} ({confidence:.1%})")
+                    log_line(f"  Match: {str(call_id)[:40]} â†’ {exp_name} ({confidence:.1%})")
             if call_matches:
                 df.at[idx, "Touchpoints"] = "; ".join(call_matches)
 
@@ -138,10 +136,10 @@ if st.button("▶ Run Expertise Analysis", disabled=(not excel_ready or not expe
     buf = io.BytesIO()
     df.to_excel(buf, index=False)
     buf.seek(0)
-    st.success(f"Analysis complete — {len(matches)} matches found across {len(df)} calls.")
+    st.success(f"Analysis complete â€” {len(matches)} matches found across {len(df)} calls.")
     expert_names = "_".join(Path(f.name).stem for f in expertise_uploads)
     st.download_button(
-        "⬇ Download result Excel",
+        "â¬‡ Download result Excel",
         data=buf,
         file_name=f"EUcalls-June26_expertise_analysis_{expert_names}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

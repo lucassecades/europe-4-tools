@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
-EU Open Calls Resubmission Matcher — Streamlit version
+EU Open Calls Resubmission Matcher â€” Streamlit version
 """
 import io
 import re
@@ -12,16 +12,14 @@ import streamlit as st
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from auth import require_password
 
-st.set_page_config(page_title="Resubmission Matcher", page_icon="🔄", layout="wide")
+st.set_page_config(page_title="Resubmission Matcher", page_icon="ðŸ”„", layout="wide")
 DEFAULT_EXCEL = Path(__file__).parent.parent / "5. data" / "EU calls data" / "EUcalls-June26.xlsx"
 
-require_password()
-st.title("🔄 EU Open Calls Resubmission Matcher")
+st.title("ðŸ”„ EU Open Calls Resubmission Matcher")
 st.markdown("Score EU open calls against your project abstract to find the best resubmission targets.")
 
-# ── Optional heavy deps ───────────────────────────────────────────────────────
+# â”€â”€ Optional heavy deps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 try:
     from sentence_transformers import SentenceTransformer
@@ -41,7 +39,7 @@ _MODEL = None
 def get_model():
     global _MODEL
     if _MODEL is None:
-        with st.spinner("Loading embedding model (first run only)…"):
+        with st.spinner("Loading embedding model (first run only)â€¦"):
             _MODEL = SentenceTransformer("all-MiniLM-L6-v2")
     return _MODEL
 
@@ -100,19 +98,19 @@ def extract_keywords(text: str) -> list[str]:
     block = re.split(r"\n\s*\n", m.group(1).strip(), maxsplit=1)[0]
     return [k.strip() for k in re.split(r"[;,]\s*", block) if k.strip()]
 
-# ── Inputs ────────────────────────────────────────────────────────────────────
+# â”€â”€ Inputs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 col1, col2 = st.columns(2)
 with col1:
-    st.subheader("Step 1 — Excel file")
+    st.subheader("Step 1 â€” Excel file")
     if DEFAULT_EXCEL.exists():
         st.success(f"Using server file: `{DEFAULT_EXCEL.name}`")
         excel_upload = None
     else:
         excel_upload = st.file_uploader("EU calls Excel (.xlsx)", type=["xlsx"])
 with col2:
-    st.subheader("Step 2 — Abstract")
-    st.caption("Recommended: 150–400 words (description + keywords)")
+    st.subheader("Step 2 â€” Abstract")
+    st.caption("Recommended: 150â€“400 words (description + keywords)")
     abstract_input_mode = st.radio("Input method", ["Upload .txt file", "Paste text"], horizontal=True, key="abs_mode_2")
     if abstract_input_mode == "Upload .txt file":
         abstract_upload = st.file_uploader("Abstract text file (.txt)", type=["txt"])
@@ -121,13 +119,13 @@ with col2:
         abstract_upload = None
         abstract_pasted = st.text_area("Paste your abstract here", height=200, placeholder="Description\n\nYour project description...\n\nKeywords\n\nkeyword1, keyword2, keyword3")
 
-# ── Run ───────────────────────────────────────────────────────────────────────
+# â”€â”€ Run â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-st.subheader("Step 3 — Run")
+st.subheader("Step 3 â€” Run")
 
 excel_ready = DEFAULT_EXCEL.exists() or excel_upload
 abstract_ready = abstract_upload or (abstract_pasted and abstract_pasted.strip())
-if st.button("▶ Run Analysis", disabled=(not excel_ready or not abstract_ready)):
+if st.button("â–¶ Run Analysis", disabled=(not excel_ready or not abstract_ready)):
     if DEFAULT_EXCEL.exists():
         df = pd.read_excel(DEFAULT_EXCEL)
     else:
@@ -184,10 +182,10 @@ if st.button("▶ Run Analysis", disabled=(not excel_ready or not abstract_ready
     result.to_excel(buf, index=False)
     buf.seek(0)
 
-    st.success(f"Done — {len(result)} calls scored.")
+    st.success(f"Done â€” {len(result)} calls scored.")
     st.dataframe(result[["ID call", "title", "similarity score", "deadline"]].head(20), use_container_width=True)
     st.download_button(
-        "⬇ Download analysis Excel",
+        "â¬‡ Download analysis Excel",
         data=buf,
         file_name=f"EU open calls - analysis - {Path(abstract_upload.name).stem if abstract_upload else 'abstract'}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
