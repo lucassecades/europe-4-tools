@@ -1,11 +1,8 @@
-﻿#!/usr/bin/env python3
-"""
-Best Partner / Project Identification â€” Streamlit version
-"""
+#!/usr/bin/env python3
 import collections
 import io
-import os
 import re
+import sys
 import tempfile
 import xml.etree.ElementTree as ET
 import zipfile
@@ -15,17 +12,10 @@ import pandas as pd
 import streamlit as st
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import sys
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-st.set_page_config(page_title="Best Partner Identification", page_icon="ðŸ¤", layout="wide")
-st.title("ðŸ¤ Best EU Partner / Project Identification")
-st.markdown("Match your abstract against the EU projects database to find the best collaboration partners.")
 
 ROOT_DIR = Path(__file__).parent.parent
 
-
-def resolve_data_dir(root: Path) -> Path:
+def resolve_data_dir(root):
     for name in ("5. data", "4. data", "data"):
         p = root / name
         if p.is_dir():
@@ -35,66 +25,69 @@ def resolve_data_dir(root: Path) -> Path:
             return p
     return root / "5. data"
 
-
 DATA_DIR = resolve_data_dir(ROOT_DIR)
-XML_DIR = DATA_DIR / "Best partner data" / "XML eu projects"
-
-# â”€â”€ Inputs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 SERVER_CSV = DATA_DIR / "Best partner data" / "EU projects csv.csv"
 SERVER_XML = DATA_DIR / "Best partner data" / "XML eu projects"
 
-st.subheader("Step 1 â€” EU Projects CSV")
+st.set_page_config(page_title="Best Partner Identification", layout="wide")
+st.title("Best EU Partner / Project Identification")
+st.markdown("Match your abstract against the EU projects database to find the best collaboration partners.")
+
+# Step 1 - CSV
+st.subheader("Step 1 - EU Projects CSV")
 if SERVER_CSV.exists():
     st.success("Using server file: `EU projects csv.csv`")
     csv_upload = None
 else:
-    csv_upload = st.file_uploader("EU projects CSV file (`EU projects csv.csv`)", type=["csv"])
+    csv_upload = st.file_uploader("EU projects CSV file", type=["csv"])
 
-st.subheader("Step 2 â€” XML files (for partner analysis)")
+# Step 2 - XML
+st.subheader("Step 2 - XML files (for partner analysis)")
 if SERVER_XML.exists():
     st.success("Using server XML files for partner analysis")
     xml_zip_upload = None
 else:
     xml_zip_upload = st.file_uploader(
-        "ZIP of the `XML eu projects` folder â€” needed for partner organisations analysis (optional)",
+        "ZIP of the XML eu projects folder (optional)",
         type=["zip"]
     )
-    st.caption("To create the ZIP: right-click the `XML eu projects` folder â†’ Send to â†’ Compressed (zipped) folder")
+    st.caption("To create the ZIP: right-click the XML eu projects folder -> Send to -> Compressed folder")
 
-st.subheader("Step 3 â€” Abstract")
-st.caption("Recommended: 150â€“400 words (description + keywords)")
+# Step 3 - Abstract
+st.subheader("Step 3 - Abstract")
+st.caption("Recommended: 150-400 words (description + keywords)")
 abstract_input_mode = st.radio("Input method", ["Upload .txt file", "Paste text"], horizontal=True, key="abs_mode_3")
 if abstract_input_mode == "Upload .txt file":
     abstract_upload = st.file_uploader("Abstract text file (.txt)", type=["txt"])
     abstract_pasted = None
 else:
     abstract_upload = None
-    abstract_pasted = st.text_area("Paste your abstract here", height=200, placeholder="Description\n\nYour project description...\n\nKeywords\n\nkeyword1, keyword2, keyword3")
+    abstract_pasted = st.text_area("Paste your abstract here", height=200,
+        placeholder="Description\n\nYour project description...\n\nKeywords\n\nkeyword1, keyword2, keyword3")
 
-st.subheader("Step 4 â€” Settings")
+# Step 4 - Settings
+st.subheader("Step 4 - Settings")
 num_top = st.number_input("Number of top projects to analyse", min_value=1, max_value=500, value=50)
 
-# â”€â”€ Run â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-st.subheader("Step 5 â€” Run")
+# Step 5 - Run
+st.subheader("Step 5 - Run")
 
 csv_ready = SERVER_CSV.exists() or csv_upload is not None
 abstract_ready = abstract_upload is not None or (abstract_pasted and abstract_pasted.strip())
-if st.button("â–¶ Run Matching", disabled=(not abstract_ready or not csv_ready)):
+
+if st.button("Run Matching", disabled=(not abstract_ready or not csv_ready)):
     if abstract_upload:
         abstract_text = abstract_upload.read().decode("utf-8", errors="replace").strip()
     else:
         abstract_text = abstract_pasted.strip()
 
     desc_m = re.search(r"Description:\s*(.*?)\nKeywords:", abstract_text, re.DOTALL | re.I)
-    kw_m   = re.search(r"Keywords:\s*(.*)",               abstract_text, re.DOTALL | re.I)
+    kw_m   = re.search(r"Keywords:\s*(.*)", abstract_text, re.DOTALL | re.I)
     description = desc_m.group(1).strip() if desc_m else abstract_text
     keywords    = kw_m.group(1).strip()   if kw_m  else ""
     abstract_full = description + " " + keywords
 
-    # Load CSV
-    with st.spinner("Loading EU projects databaseâ€¦"):
+    with st.spinner("Loading EU projects database..."):
         try:
             csv_source = SERVER_CSV if SERVER_CSV.exists() else csv_upload
             df = pd.read_csv(csv_source, sep=";", quotechar='"', header=0,
@@ -107,8 +100,7 @@ if st.button("â–¶ Run Matching", disabled=(not abstract_ready or not csv_rea
 
     st.info(f"Database loaded: {len(df)} projects")
 
-    # Embeddings
-    with st.spinner("Loading embedding model (first run only)â€¦"):
+    with st.spinner("Loading embedding model (first run only)..."):
         model = SentenceTransformer("all-MiniLM-L6-v2")
 
     abstract_emb = model.encode(abstract_full, convert_to_tensor=True)
@@ -122,26 +114,22 @@ if st.button("â–¶ Run Matching", disabled=(not abstract_ready or not csv_rea
     total = len(df)
 
     for step, (_, row) in enumerate(df.iterrows()):
-        status.text(f"Scoring project {step + 1}/{total}â€¦")
+        status.text(f"Scoring project {step + 1}/{total}...")
         obj = str(row.get("objective", ""))
         proj_kw_raw = str(row.get("keywords", ""))
 
         obj_emb = model.encode(obj, convert_to_tensor=True)
-        obj_sim = float(cosine_similarity(
-            [abstract_emb.cpu().numpy()], [obj_emb.cpu().numpy()]
-        )[0][0])
+        obj_sim = float(cosine_similarity([abstract_emb.cpu().numpy()], [obj_emb.cpu().numpy()])[0][0])
 
         proj_kw_list = [k.strip() for k in proj_kw_raw.split(",") if k.strip()]
         proj_kw_text = " ".join(proj_kw_list)
         if abs_kw_emb is not None and proj_kw_text:
             proj_kw_emb = model.encode(proj_kw_text, convert_to_tensor=True)
-            kw_sim = float(cosine_similarity(
-                [abs_kw_emb.cpu().numpy()], [proj_kw_emb.cpu().numpy()]
-            )[0][0])
+            kw_sim = float(cosine_similarity([abs_kw_emb.cpu().numpy()], [proj_kw_emb.cpu().numpy()])[0][0])
             n = len(proj_kw_list)
-            avg_len  = sum(len(k) for k in proj_kw_list) / n if n else 0
+            avg_len   = sum(len(k) for k in proj_kw_list) / n if n else 0
             diversity = len(set(proj_kw_list)) / (n or 1)
-            kw_conf  = min(1.0, 0.5 * (n / 10) + 0.3 * (avg_len / 10) + 0.2 * diversity)
+            kw_conf   = min(1.0, 0.5 * (n / 10) + 0.3 * (avg_len / 10) + 0.2 * diversity)
         else:
             kw_sim, kw_conf = 0.0, 0.0
 
@@ -161,7 +149,7 @@ if st.button("â–¶ Run Matching", disabled=(not abstract_ready or not csv_rea
 
     top = df.sort_values("match_score", ascending=False).head(int(num_top)).copy()
 
-    # â”€â”€ Excel 1: project matches â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # Excel 1: project matches
     top_out = top[["rcn", "id", "title", "objective", "keywords",
                    "Keywords score", "Objective similarity score", "match_score"]].copy()
     top_out["match_score_normalized"] = top_out["match_score"] / 100.0
@@ -176,12 +164,12 @@ if st.button("â–¶ Run Matching", disabled=(not abstract_ready or not csv_rea
     top_out.to_excel(buf1, index=False)
     buf1.seek(0)
 
-    # â”€â”€ Excel 2: organisation analysis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    # Excel 2: organisation analysis
     status2 = st.empty()
     orgs = []
     rcn_to_title = {str(r.rcn): str(r.title) for r in top.itertuples(index=False)}
 
-    def parse_xmls_from_dir(xml_dir: Path):
+    def parse_xmls_from_dir(xml_dir):
         for step, row in enumerate(top.itertuples(index=False)):
             rcn = str(getattr(row, "rcn"))
             xml_path = xml_dir / f"project-rcn-{rcn}_en.xml"
@@ -204,7 +192,7 @@ if st.button("â–¶ Run Matching", disabled=(not abstract_ready or not csv_rea
                     })
             except Exception:
                 pass
-            status2.text(f"Parsing XML {step + 1}/{len(top)}â€¦")
+            status2.text(f"Parsing XML {step + 1}/{len(top)}...")
 
     if SERVER_XML.exists():
         parse_xmls_from_dir(SERVER_XML)
@@ -212,11 +200,10 @@ if st.button("â–¶ Run Matching", disabled=(not abstract_ready or not csv_rea
         with tempfile.TemporaryDirectory() as tmp_dir:
             with zipfile.ZipFile(xml_zip_upload, "r") as zf:
                 zf.extractall(tmp_dir)
-            # find the actual XML folder inside the zip
             tmp_path = Path(tmp_dir)
-            xml_dirs = [p for p in tmp_path.rglob("*.xml")]
-            if xml_dirs:
-                parse_xmls_from_dir(xml_dirs[0].parent)
+            xml_files = list(tmp_path.rglob("*.xml"))
+            if xml_files:
+                parse_xmls_from_dir(xml_files[0].parent)
 
     status2.empty()
 
@@ -246,32 +233,35 @@ if st.button("â–¶ Run Matching", disabled=(not abstract_ready or not csv_rea
         }
         for v in org_agg.values()
     ]
+
     orgs_df = pd.DataFrame(org_rows) if org_rows else pd.DataFrame(
         columns=["name", "type", "website", "# of projects", "score of pertinence", "Involved projects"]
     )
     if not orgs_df.empty:
         orgs_df = orgs_df.sort_values(["score of pertinence", "# of projects"], ascending=[False, False])
+
     buf2 = io.BytesIO()
     orgs_df.to_excel(buf2, index=False)
     buf2.seek(0)
 
-    st.success(f"Done â€” top {len(top)} projects analysed.")
+    st.success(f"Done - top {len(top)} projects analysed.")
     if orgs_df.empty:
-        st.warning("No partner organisations found â€” XML files are not available on the server. Only the project matches Excel will be complete.")
+        st.warning("No partner organisations found - XML files not available.")
 
-    abstract_base = re.sub(r"[^A-Za-z0-9 _-]", "", Path(abstract_upload.name).stem if abstract_upload else "abstract").strip() or "Abstract"
+    abstract_base = re.sub(r"[^A-Za-z0-9 _-]", "",
+        Path(abstract_upload.name).stem if abstract_upload else "abstract").strip() or "Abstract"
 
     c1, c2 = st.columns(2)
     with c1:
         st.download_button(
-            "â¬‡ Download project matches Excel",
+            "Download project matches Excel",
             data=buf1,
             file_name=f"{abstract_base}-EU projects matchmaking.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
     with c2:
         st.download_button(
-            "â¬‡ Download partners analysis Excel",
+            "Download partners analysis Excel",
             data=buf2,
             file_name=f"{abstract_base}-EU partners analysis.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -279,6 +269,7 @@ if st.button("â–¶ Run Matching", disabled=(not abstract_ready or not csv_rea
 
     st.subheader("Top 10 project matches")
     st.dataframe(top_out[["title", "match_score", "Project Website"]].head(10), use_container_width=True)
-    st.subheader("Top 10 partner organisations")
-    st.dataframe(orgs_df[["name", "type", "# of projects", "score of pertinence", "website"]].head(10),
-                 use_container_width=True)
+    if not orgs_df.empty:
+        st.subheader("Top 10 partner organisations")
+        st.dataframe(orgs_df[["name", "type", "# of projects", "score of pertinence", "website"]].head(10),
+                     use_container_width=True)
