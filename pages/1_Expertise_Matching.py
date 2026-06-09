@@ -142,6 +142,6 @@ if st.button("▶ Run Expertise Analysis", disabled=(not excel_ready or not expe
     st.download_button(
         "⬇ Download result Excel",
         data=buf,
-        file_name=excel_upload.name.replace(".xlsx", "_expertise_analysis.xlsx"),
+        file_name=(excel_upload.name if excel_upload else DEFAULT_EXCEL.name).replace(".xlsx", "_expertise_analysis.xlsx"),
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
