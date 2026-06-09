@@ -139,10 +139,10 @@ if st.button("▶ Run Expertise Analysis", disabled=(not excel_ready or not expe
     df.to_excel(buf, index=False)
     buf.seek(0)
     st.success(f"Analysis complete — {len(matches)} matches found across {len(df)} calls.")
+    expert_names = "_".join(Path(f.name).stem for f in expertise_uploads)
     st.download_button(
         "⬇ Download result Excel",
         data=buf,
-        expert_names = "_".join(Path(f.name).stem for f in expertise_uploads)
-    file_name=f"EUcalls-June26_expertise_analysis_{expert_names}.xlsx",
+        file_name=f"EUcalls-June26_expertise_analysis_{expert_names}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
