@@ -74,7 +74,8 @@ num_top = st.number_input("Number of top projects to analyse", min_value=1, max_
 
 st.subheader("Step 5 — Run")
 
-if st.button("▶ Run Matching", disabled=(abstract_upload is None or csv_upload is None)):
+csv_ready = SERVER_CSV.exists() or csv_upload is not None
+if st.button("▶ Run Matching", disabled=(abstract_upload is None or not csv_ready)):
     abstract_text = abstract_upload.read().decode("utf-8", errors="replace").strip()
 
     desc_m = re.search(r"Description:\s*(.*?)\nKeywords:", abstract_text, re.DOTALL | re.I)

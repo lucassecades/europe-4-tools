@@ -142,6 +142,7 @@ if st.button("▶ Run Expertise Analysis", disabled=(not excel_ready or not expe
     st.download_button(
         "⬇ Download result Excel",
         data=buf,
-        file_name=(excel_upload.name if excel_upload else DEFAULT_EXCEL.name).replace(".xlsx", "_expertise_analysis.xlsx"),
+        expert_names = "_".join(Path(f.name).stem for f in expertise_uploads)
+    file_name=f"EUcalls-June26_expertise_analysis_{expert_names}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
