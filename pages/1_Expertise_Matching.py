@@ -10,6 +10,9 @@ import pandas as pd
 import streamlit as st
 
 ROOT_DIR = Path(__file__).parent.parent
+sys.path.insert(0, str(ROOT_DIR))
+from auth import require_password
+require_password()
 
 sys.path.insert(0, str(ROOT_DIR / "1. Expertise matchmaking EU"))
 
@@ -115,11 +118,17 @@ if st.button("▶ Run Expertise Analysis", disabled=(not excel_upload or not exp
     log_line(f"\nTotal matches: {len(matches)}")
     log_line("=" * 70)
 
+    # Filter: only rows where at least one expertise confidence column is filled
+    confidence_cols = [c for c in df.columns if c.endswith("- Confidence")]
+    if confidence_cols:
+        mask = df[confidence_cols].apply(lambda row: row.astype(str).str.strip().ne("").any(), axis=1)
+        df = df[mask]
+
     # Output
     buf = io.BytesIO()
     df.to_excel(buf, index=False)
     buf.seek(0)
-    st.success(f"Analysis complete — {len(matches)} matches found.")
+    st.success(f"Analysis complete — {len(matches)} matches found across {len(df)} calls.")
     st.download_button(
         "⬇ Download result Excel",
         data=buf,

@@ -2,9 +2,15 @@
 """
 EU Research Tools — main entry point for the Streamlit multi-page app.
 """
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent))
+
 import streamlit as st
+from auth import require_password
 
 st.set_page_config(page_title="EU Research Tools", page_icon="🇪🇺", layout="wide")
+require_password()
 
 st.title("🇪🇺 EU Research Tools")
 st.markdown("""

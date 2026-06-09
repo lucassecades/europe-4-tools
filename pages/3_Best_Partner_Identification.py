@@ -13,8 +13,12 @@ import pandas as pd
 import streamlit as st
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from auth import require_password
 
 st.set_page_config(page_title="Best Partner Identification", page_icon="🤝", layout="wide")
+require_password()
 st.title("🤝 Best EU Partner / Project Identification")
 st.markdown("Match your abstract against the EU projects database to find the best collaboration partners.")
 
@@ -33,32 +37,24 @@ def resolve_data_dir(root: Path) -> Path:
 
 
 DATA_DIR = resolve_data_dir(ROOT_DIR)
-BEST_PARTNER_DATA_DIR = DATA_DIR / "Best partner data"
-CSV_PATH = BEST_PARTNER_DATA_DIR / "EU projects csv.csv"
-XML_DIR  = BEST_PARTNER_DATA_DIR / "XML eu projects"
-
-# ── Check data availability ───────────────────────────────────────────────────
-
-if not CSV_PATH.exists():
-    st.error(
-        f"EU projects CSV not found at `{CSV_PATH}`. "
-        "Make sure the data folder is present on the server."
-    )
-    st.stop()
+XML_DIR = DATA_DIR / "Best partner data" / "XML eu projects"
 
 # ── Inputs ────────────────────────────────────────────────────────────────────
 
-st.subheader("Step 1 — Abstract")
+st.subheader("Step 1 — EU Projects CSV")
+csv_upload = st.file_uploader("EU projects CSV file (`EU projects csv.csv`)", type=["csv"])
+
+st.subheader("Step 2 — Abstract")
 abstract_upload = st.file_uploader("Abstract text file (.txt)", type=["txt"])
 
-st.subheader("Step 2 — Settings")
+st.subheader("Step 3 — Settings")
 num_top = st.number_input("Number of top projects to analyse", min_value=1, max_value=500, value=50)
 
 # ── Run ───────────────────────────────────────────────────────────────────────
 
-st.subheader("Step 3 — Run")
+st.subheader("Step 4 — Run")
 
-if st.button("▶ Run Matching", disabled=(abstract_upload is None)):
+if st.button("▶ Run Matching", disabled=(abstract_upload is None or csv_upload is None)):
     abstract_text = abstract_upload.read().decode("utf-8", errors="replace").strip()
 
     desc_m = re.search(r"Description:\s*(.*?)\nKeywords:", abstract_text, re.DOTALL | re.I)
@@ -70,7 +66,7 @@ if st.button("▶ Run Matching", disabled=(abstract_upload is None)):
     # Load CSV
     with st.spinner("Loading EU projects database…"):
         try:
-            df = pd.read_csv(CSV_PATH, sep=";", quotechar='"', header=0,
+            df = pd.read_csv(csv_upload, sep=";", quotechar='"', header=0,
                              on_bad_lines="skip", dtype=str)
             valid_col_count = 20
             df = df[df.apply(lambda r: len(r) == valid_col_count, axis=1)]

@@ -12,6 +12,10 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 from bs4 import BeautifulSoup
+import sys
+from pathlib import Path as _Path
+sys.path.insert(0, str(_Path(__file__).parent.parent))
+from auth import require_password
 
 ROOT_DIR = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT_DIR / "4. EU portal screening from HTML"))
@@ -20,6 +24,7 @@ from sedia_api import fetch_topic_data, extract_topic_id
 MAX_CONCURRENT = 15
 
 st.set_page_config(page_title="EU Portal Screening", page_icon="🌐", layout="wide")
+require_password()
 st.title("🌐 EU Portal Screening from HTML")
 st.markdown(
     "Upload HTML exports from the EU Funding & Tenders Portal, "

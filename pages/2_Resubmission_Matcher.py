@@ -9,8 +9,13 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from auth import require_password
 
 st.set_page_config(page_title="Resubmission Matcher", page_icon="🔄", layout="wide")
+require_password()
 st.title("🔄 EU Open Calls Resubmission Matcher")
 st.markdown("Score EU open calls against your project abstract to find the best resubmission targets.")
 
